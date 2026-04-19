@@ -1,6 +1,7 @@
 <div align="center">
-  <img src="media/mochi_logo.svg" alt="Mochi logo" width="150" />
-  <h1>Mochi</h1>
+  <img src="media/mochi_logo_readme.svg" alt="Mochi logo" width="132" />
+  <h1><code>MOCHI</code></h1>
+  <p><code>local-first · multi-agent · memory-aware</code></p>
   <p><strong>A local-first VS Code coding agent with workspace tools, session memory, and approval-aware file edits.</strong></p>
 </div>
 
@@ -20,6 +21,10 @@ The project is intentionally local-first. Runtime state, memory, and traces are 
 - Workspace memory that records detected project facts and suggested verification commands.
 - Project instruction loading from `MOCHI.md`, `AGENTS.md`, and `CLAUDE.md` style files when present.
 - Memory snapshots and run traces for debugging what Mochi remembered, which tools ran, and what changed.
+- Root-agent orchestration with delegated subagents for repository guidance, coding, plan review, and code review.
+- Role-specific tool permissions so exploratory and review agents stay read-only while the coding agent can edit.
+- Lightweight local skills that inject task-specific workflow guidance only when relevant.
+- Markdown rendering in assistant replies, including headings, lists, code blocks, inline code, links, and quotes.
 
 ## Requirements
 
@@ -51,7 +56,7 @@ chmod +x ./scripts/setup_openai.sh
 ./scripts/setup_openai.sh
 ```
 
-If you do not need a local proxy, choose `n` when the setup script asks about proxy configuration. When setup completes, run the `source ...` command printed by the script so the new environment is available in your current shell.
+If you do not need a local proxy, choose `n` when the setup script asks about proxy configuration. Mochi reads `~/.openai-env` directly at runtime. The `source ...` command printed by the setup script is useful when you also want the new environment in your current terminal session.
 
 Start the VS Code extension:
 
@@ -60,6 +65,7 @@ Start the VS Code extension:
 3. Select `Run Local Agent Extension` if VS Code asks for a launch target.
 4. In the Extension Development Host window, run `Local Agent: Open Chat`.
 5. Send `ping` or ask Mochi to inspect the workspace.
+6. If you want Mochi to work on a different folder, run `Local Agent: Select Workspace Folder` from the Extension Development Host.
 
 ## Usage
 
@@ -70,6 +76,8 @@ Local Agent: Open Chat
 ```
 
 Mochi can answer questions, inspect files, make workspace edits, and use the active editor selection as context. When an action is risky, the chat panel shows an approval card before the runtime proceeds.
+
+For complex work, Mochi may delegate bounded subtasks to specialized subagents. Delegation remains visible in run traces, and subagents receive selected memory and skills rather than unrestricted long-term memory.
 
 The current workflow is optimized for local development:
 
