@@ -11,6 +11,10 @@ The project is intentionally local-first. Runtime state, memory, and traces are 
 
 ## Demo
 
+
+https://github.com/user-attachments/assets/01e88781-2600-4f24-8cb4-a177271787ab
+
+
 <video src="media/video-demo.mp4" controls width="720"></video>
 
 If the video does not render in your Markdown viewer, open `media/video-demo.mp4` directly.
