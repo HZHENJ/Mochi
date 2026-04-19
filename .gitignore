@@ -1,0 +1,28 @@
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+
+# Node / extension dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Local environment and generated state
+.env
+.env.*
+!.env.example
+.mochi/memory/
+.mochi/state/
+.mochi/storage/
+/mochi-memory/
+/memory/
+.tmp-*/
+.tmp*/
+
+# VS Code extension output
+out/
+dist/
+*.vsix

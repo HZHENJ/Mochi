@@ -1,0 +1,119 @@
+const { ROOT_AGENT_INSTRUCTIONS } = require("../prompts/root_instructions");
+const { REPO_GUIDE_INSTRUCTIONS } = require("../prompts/repo_guide_instructions");
+const { CODING_AGENT_INSTRUCTIONS } = require("../prompts/coding_instructions");
+const { PLAN_REVIEWER_INSTRUCTIONS } = require("../prompts/plan_reviewer_instructions");
+const { REVIEW_AGENT_INSTRUCTIONS } = require("../prompts/review_instructions");
+const { wrapToolsWithLifecycle } = require("../support/tool_lifecycle");
+const { createSubagentTools } = require("../tools/subagent_tools");
+
+const DEFAULT_MODEL = "gpt-4.1-mini";
+
+function createAgents({
+  sdk,
+  zod,
+  tools,
+  model = process.env.OPENAI_MODEL || DEFAULT_MODEL,
+  runSubAgent = null,
+  getRunState = null,
+  requestToolAccess = null,
+}) {
+  const { Agent } = sdk;
+  const readOnlyTools = filterTools(tools, READ_ONLY_TOOL_NAMES);
+  const reviewTools = filterTools(tools, REVIEW_TOOL_NAMES);
+
+  const repoGuideAgent = new Agent({
+    name: "Repo Guide",
+    instructions: REPO_GUIDE_INSTRUCTIONS,
+    model,
+    tools: readOnlyTools,
+  });
+
+  const codingAgent = new Agent({
+    name: "Coding Agent",
+    instructions: CODING_AGENT_INSTRUCTIONS,
+    model,
+    tools,
+  });
+
+  const planReviewerAgent = new Agent({
+    name: "Plan Reviewer",
+    instructions: PLAN_REVIEWER_INSTRUCTIONS,
+    model,
+    tools: readOnlyTools,
+  });
+
+  const reviewAgent = new Agent({
+    name: "Review Agent",
+    instructions: REVIEW_AGENT_INSTRUCTIONS,
+    model,
+    tools: reviewTools,
+  });
+
+  const subAgents = {
+    repo_guide: repoGuideAgent,
+    coding: codingAgent,
+    plan_reviewer: planReviewerAgent,
+    review: reviewAgent,
+  };
+  const subagentTools = zod
+    ? wrapToolsWithLifecycle(
+        createSubagentTools({
+          sdk,
+          zod,
+          getSubAgents: () => subAgents,
+          runSubAgent,
+        }),
+        {
+          getRunState,
+          requestToolAccess,
+        }
+      )
+    : [];
+  const rootTools = zod
+    ? [
+        ...tools,
+        ...subagentTools,
+      ]
+    : tools;
+
+  const rootConfig = {
+    name: "Mochi",
+    instructions: ROOT_AGENT_INSTRUCTIONS,
+    model,
+    tools: rootTools,
+  };
+
+  const rootAgent =
+    typeof Agent.create === "function" ? Agent.create(rootConfig) : new Agent(rootConfig);
+
+  return {
+    rootAgent,
+    repoGuideAgent,
+    codingAgent,
+    planReviewerAgent,
+    reviewAgent,
+    subAgents,
+  };
+}
+
+const READ_ONLY_TOOL_NAMES = new Set([
+  "get_workspace_root",
+  "list_files",
+  "read_file",
+  "get_editor_context",
+]);
+
+const REVIEW_TOOL_NAMES = new Set([
+  ...READ_ONLY_TOOL_NAMES,
+  "run_command",
+]);
+
+function filterTools(tools, allowedNames) {
+  const items = Array.isArray(tools) ? tools : [];
+  return items.filter((tool) => tool && allowedNames.has(tool.name));
+}
+
+module.exports = {
+  createAgents,
+  DEFAULT_MODEL,
+};

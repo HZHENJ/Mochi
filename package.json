@@ -1,0 +1,80 @@
+{
+  "name": "local-agent-chat",
+  "displayName": "Mochi",
+  "description": "A local VS Code chat agent with session memory, workspace tools, and cautious file editing.",
+  "version": "0.0.1",
+  "publisher": "local",
+  "license": "MIT",
+  "type": "commonjs",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "dependencies": {
+    "@openai/agents": "^0.1.0",
+    "zod": "^3.25.40"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:localAgent.openChat",
+    "onCommand:localAgent.sendSelection",
+    "onCommand:localAgent.applyLastReply",
+    "onCommand:localAgent.quickAsk",
+    "onCommand:localAgent.selectWorkspaceFolder",
+    "onCommand:localAgent.openMemorySnapshot",
+    "onCommand:localAgent.openRawMemorySnapshot",
+    "onView:localAgent.chatView"
+  ],
+  "main": "./src/extension/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "panel": [
+        {
+          "id": "localAgentPanel",
+          "title": "Mochi",
+          "icon": "media/mochi_logo.svg"
+        }
+      ]
+    },
+    "views": {
+      "localAgentPanel": [
+        {
+          "type": "webview",
+          "id": "localAgent.chatView",
+          "name": "Mochi"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "localAgent.openChat",
+        "title": "Local Agent: Open Chat"
+      },
+      {
+        "command": "localAgent.sendSelection",
+        "title": "Local Agent: Ask About Selection"
+      },
+      {
+        "command": "localAgent.applyLastReply",
+        "title": "Local Agent: Replace Selection With Last Reply"
+      },
+      {
+        "command": "localAgent.quickAsk",
+        "title": "Local Agent: Quick Ask"
+      },
+      {
+        "command": "localAgent.selectWorkspaceFolder",
+        "title": "Local Agent: Select Workspace Folder"
+      },
+      {
+        "command": "localAgent.openMemorySnapshot",
+        "title": "Local Agent: Open Memory Snapshot"
+      },
+      {
+        "command": "localAgent.openRawMemorySnapshot",
+        "title": "Local Agent: Open Raw Memory Snapshot"
+      }
+    ]
+  }
+}
