@@ -52,7 +52,7 @@ Later cleanup:
 
 - removed the Python reference agent after the JavaScript runtime became the only maintained product path
 - removed the shell prompt wrapper after the VS Code JavaScript runtime became the only maintained product path
-- kept `scripts/setup_openai.sh` for OpenAI environment configuration
+- kept `scripts/setup_openai.sh` for local model provider environment configuration
 
 ## Phase 3: VS Code Runtime Shift To OpenAI Agents SDK
 
@@ -913,6 +913,24 @@ Follow-up chat rendering update:
 - assistant bubbles now render common Markdown instead of showing raw Markdown characters
 - the renderer escapes HTML before formatting, keeps user messages as plain text, and supports headings, lists, code blocks, inline code, links, quotes, and separators
 - streamed replies still appear as plain accumulating text while streaming, then render as Markdown when finalized
+
+## Phase 45: OpenAI-Compatible Provider Setup
+
+The setup helper now supports choosing between OpenAI and Gemini without changing Mochi's main runtime path.
+
+What changed:
+
+- `scripts/setup_openai.sh` now starts with a provider choice
+- OpenAI keeps the default `https://api.openai.com/v1` endpoint and `gpt-4.1-mini` model
+- Gemini writes a Google AI Studio key into the OpenAI-compatible environment variables used by the Node SDK
+- Gemini setup also stores `GEMINI_API_KEY` for clarity while keeping `OPENAI_API_KEY` for SDK compatibility
+- README and usage docs now describe the script as model provider setup rather than OpenAI-only setup
+
+Why it matters:
+
+- users can try Gemini through the same VS Code extension flow
+- the runtime stays simple because provider switching is handled through environment configuration
+- the setup prompt is clearer for first-time users and avoids mixing OpenAI and Gemini keys
 
 ## Next Likely Steps
 

@@ -40,15 +40,29 @@ If the video does not render in your Markdown viewer, open `media/video-demo.mp4
 
 - VS Code `1.90.0` or newer.
 - Node.js and npm.
-- An OpenAI API key.
+- An OpenAI API key or a Google AI Studio Gemini API key.
 
-Mochi reads OpenAI configuration from your shell environment or from `~/.openai-env`:
+Mochi reads model provider configuration from your shell environment or from `~/.openai-env`. The setup script supports OpenAI and Gemini through an OpenAI-compatible endpoint:
 
 ```bash
+export MOCHI_MODEL_PROVIDER="openai"
 export OPENAI_API_KEY="sk-..."
+export MOCHI_OPENAI_API_KEY="sk-..."
 export OPENAI_BASE_URL="https://api.openai.com/v1"
 export OPENAI_MODEL="gpt-4.1-mini"
 export OPENAI_API_FORMAT="chat_completions"
+```
+
+For Gemini, the active SDK key is still written to `OPENAI_API_KEY` because Mochi uses an OpenAI-compatible client. Provider-specific keys are kept separately so switching does not mix credentials:
+
+```bash
+export MOCHI_MODEL_PROVIDER="gemini"
+export OPENAI_API_KEY="AIza..."
+export OPENAI_BASE_URL="https://generativelanguage.googleapis.com/v1beta/openai/"
+export OPENAI_MODEL="gemini-2.5-flash"
+export OPENAI_API_FORMAT="chat_completions"
+export MOCHI_OPENAI_API_KEY="sk-..."
+export GEMINI_API_KEY="AIza..."
 ```
 
 ## Quick Start
@@ -59,14 +73,14 @@ Install JavaScript dependencies:
 npm install
 ```
 
-Configure OpenAI credentials:
+Configure model credentials:
 
 ```bash
 chmod +x ./scripts/setup_openai.sh
 ./scripts/setup_openai.sh
 ```
 
-If you do not need a local proxy, choose `n` when the setup script asks about proxy configuration. Mochi reads `~/.openai-env` directly at runtime. The `source ...` command printed by the setup script is useful when you also want the new environment in your current terminal session.
+The setup script asks for provider, API key, model, optional shell integration, and optional proxy settings. Mochi reads `~/.openai-env` directly at runtime, so most users can accept the defaults and start the extension after setup.
 
 Start the VS Code extension:
 

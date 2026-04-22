@@ -18,33 +18,34 @@ function createAgents({
   requestToolAccess = null,
 }) {
   const { Agent } = sdk;
+  const runtimeIdentity = buildRuntimeIdentity(model);
   const readOnlyTools = filterTools(tools, READ_ONLY_TOOL_NAMES);
   const reviewTools = filterTools(tools, REVIEW_TOOL_NAMES);
 
   const repoGuideAgent = new Agent({
     name: "Repo Guide",
-    instructions: REPO_GUIDE_INSTRUCTIONS,
+    instructions: joinInstructions(REPO_GUIDE_INSTRUCTIONS, runtimeIdentity),
     model,
     tools: readOnlyTools,
   });
 
   const codingAgent = new Agent({
     name: "Coding Agent",
-    instructions: CODING_AGENT_INSTRUCTIONS,
+    instructions: joinInstructions(CODING_AGENT_INSTRUCTIONS, runtimeIdentity),
     model,
     tools,
   });
 
   const planReviewerAgent = new Agent({
     name: "Plan Reviewer",
-    instructions: PLAN_REVIEWER_INSTRUCTIONS,
+    instructions: joinInstructions(PLAN_REVIEWER_INSTRUCTIONS, runtimeIdentity),
     model,
     tools: readOnlyTools,
   });
 
   const reviewAgent = new Agent({
     name: "Review Agent",
-    instructions: REVIEW_AGENT_INSTRUCTIONS,
+    instructions: joinInstructions(REVIEW_AGENT_INSTRUCTIONS, runtimeIdentity),
     model,
     tools: reviewTools,
   });
@@ -78,7 +79,7 @@ function createAgents({
 
   const rootConfig = {
     name: "Mochi",
-    instructions: ROOT_AGENT_INSTRUCTIONS,
+    instructions: joinInstructions(ROOT_AGENT_INSTRUCTIONS, runtimeIdentity),
     model,
     tools: rootTools,
   };
@@ -111,6 +112,34 @@ const REVIEW_TOOL_NAMES = new Set([
 function filterTools(tools, allowedNames) {
   const items = Array.isArray(tools) ? tools : [];
   return items.filter((tool) => tool && allowedNames.has(tool.name));
+}
+
+function buildRuntimeIdentity(model) {
+  const provider = process.env.MOCHI_MODEL_PROVIDER || inferProviderFromBaseUrl(process.env.OPENAI_BASE_URL);
+  const providerLabel = provider || "openai-compatible";
+  return [
+    `Runtime provider: ${providerLabel}.`,
+    `Runtime model: ${model}.`,
+    "If the user asks what model or provider is being used, answer from this runtime configuration.",
+    "Do not claim to be GPT-4, OpenAI, or Gemini unless that matches the runtime provider and model above.",
+  ].join(" ");
+}
+
+function inferProviderFromBaseUrl(baseUrl) {
+  if (!baseUrl) {
+    return "";
+  }
+  if (baseUrl.includes("generativelanguage.googleapis.com")) {
+    return "gemini";
+  }
+  if (baseUrl.includes("api.openai.com")) {
+    return "openai";
+  }
+  return "openai-compatible";
+}
+
+function joinInstructions(...parts) {
+  return parts.filter(Boolean).join(" ");
 }
 
 module.exports = {

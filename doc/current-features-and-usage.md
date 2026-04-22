@@ -160,14 +160,14 @@ This helps repo-specific guidance live with the codebase instead of being re-exp
 
 ## Current Setup
 
-### 1. Configure OpenAI
+### 1. Configure Model Provider
 
 ```bash
 chmod +x ./scripts/setup_openai.sh
 ./scripts/setup_openai.sh
 ```
 
-If you do not use a proxy, choose `n` when asked to configure proxy settings. When setup completes, run the `source ...` command printed by the script so the new environment is available in your current shell.
+The setup script can configure either OpenAI or Gemini through an OpenAI-compatible endpoint. If you do not use a proxy, choose `n` when asked to configure proxy settings. When setup completes, run the `source ...` command printed by the script so the new environment is available in your current shell.
 
 ### 2. Install JavaScript Runtime Dependencies
 
@@ -207,7 +207,7 @@ This installs:
 For normal development and testing:
 
 1. use the VS Code extension path
-2. use the setup script only for OpenAI environment configuration
+2. use the setup script only for local model provider configuration
 
 ## What Changed Recently
 

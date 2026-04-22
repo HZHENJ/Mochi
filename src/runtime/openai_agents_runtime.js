@@ -46,6 +46,8 @@ class OpenAIAgentsRuntime {
     };
     this.sdk = null;
     this.zod = null;
+    this.modelProvider = null;
+    this.runnerConfig = null;
     this.agents = null;
     this.runStateStorage = new AsyncLocalStorage();
     this.activeToolRunId = "";
@@ -117,7 +119,7 @@ class OpenAIAgentsRuntime {
         kind: "status",
         text: "Starting agent run...",
       });
-      const result = await withLightRetry(() => sdk.run(rootAgent, input, { stream: true }));
+      const result = await withLightRetry(() => this.runAgent(sdk, rootAgent, input));
       await this.consumeStreamedRun(result);
 
       const text = this.extractFinalOutput(result);
@@ -262,7 +264,7 @@ class OpenAIAgentsRuntime {
       kind: "status",
       text: `Running ${agentName || agentKey}...`,
     });
-    const result = await withLightRetry(() => sdk.run(agent, input, { stream: true }));
+    const result = await withLightRetry(() => this.runAgent(sdk, agent, input));
     await this.consumeStreamedRun(result, {
       trace: subTrace,
       emitTextDelta: false,
@@ -328,7 +330,50 @@ class OpenAIAgentsRuntime {
       );
     }
 
+    this.configureModelProvider();
+
     return this.sdk;
+  }
+
+  configureModelProvider() {
+    if (!this.sdk || typeof this.sdk.OpenAIProvider !== "function") {
+      this.runnerConfig = null;
+      return;
+    }
+
+    const apiKey = process.env.OPENAI_API_KEY || "";
+    const baseURL = process.env.OPENAI_BASE_URL || "";
+    const apiFormat = process.env.OPENAI_API_FORMAT || "chat_completions";
+    const providerName = process.env.MOCHI_MODEL_PROVIDER || inferProviderFromBaseUrl(baseURL);
+    const useResponses = apiFormat !== "chat_completions";
+
+    if (typeof this.sdk.setOpenAIAPI === "function") {
+      this.sdk.setOpenAIAPI(useResponses ? "responses" : "chat_completions");
+    }
+
+    this.modelProvider = new this.sdk.OpenAIProvider({
+      apiKey,
+      baseURL,
+      useResponses,
+    });
+
+    if (typeof this.sdk.setDefaultModelProvider === "function") {
+      this.sdk.setDefaultModelProvider(this.modelProvider);
+    }
+
+    this.runnerConfig = {
+      modelProvider: this.modelProvider,
+      tracingDisabled: providerName !== "openai",
+      traceIncludeSensitiveData: false,
+    };
+  }
+
+  async runAgent(sdk, agent, input) {
+    if (this.runnerConfig && typeof sdk.Runner === "function") {
+      const runner = new sdk.Runner(this.runnerConfig);
+      return runner.run(agent, input, { stream: true });
+    }
+    return sdk.run(agent, input, { stream: true });
   }
 
   getRuntimeTools() {
@@ -622,6 +667,19 @@ function limitSubagentText(value, maxChars) {
   }
 
   return `${text.slice(0, Math.max(0, maxChars - 15))}\n...[truncated]`;
+}
+
+function inferProviderFromBaseUrl(baseUrl) {
+  if (!baseUrl) {
+    return "openai";
+  }
+  if (baseUrl.includes("generativelanguage.googleapis.com")) {
+    return "gemini";
+  }
+  if (baseUrl.includes("api.openai.com")) {
+    return "openai";
+  }
+  return "openai-compatible";
 }
 
 module.exports = {
