@@ -52,9 +52,15 @@ jobs:
   semgrep:
     runs-on: ubuntu-latest
     container: returntocorp/semgrep
+    permissions:
+      security-events: write
     steps:
       - uses: actions/checkout@v4
-      - run: semgrep ci --config=auto
+      - run: semgrep ci --config=auto --sarif --output=semgrep.sarif
+        continue-on-error: true
+      - uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: semgrep.sarif
 
   codeql:
     runs-on: ubuntu-latest
