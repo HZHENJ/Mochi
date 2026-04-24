@@ -26,3 +26,10 @@ pnpm-debug.log*
 out/
 dist/
 *.vsix
+
+# Mock / dev scripts (not for production)
+scripts/mock-sessions.json
+scripts/mock-*.json
+scripts/mochi-report.html
+scripts/Untitled-*.json
+mochi-report.html
