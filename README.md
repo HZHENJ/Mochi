@@ -41,6 +41,8 @@ export OPENAI_MODEL="gpt-4.1-mini"
 export OPENAI_API_FORMAT="chat_completions"
 ```
 
+The runtime also accepts plain `.env`-style lines such as `OPENAI_API_KEY="sk-..."`, which makes the same file work on Windows, macOS, and Linux.
+
 ## Quick Start
 
 Install JavaScript dependencies:
@@ -52,11 +54,15 @@ npm install
 Configure OpenAI credentials:
 
 ```bash
-chmod +x ./scripts/setup_openai.sh
-./scripts/setup_openai.sh
+npm run setup:openai
 ```
 
-If you do not need a local proxy, choose `n` when the setup script asks about proxy configuration. Mochi reads `~/.openai-env` directly at runtime. The `source ...` command printed by the setup script is useful when you also want the new environment in your current terminal session.
+Alternative setup helpers:
+
+- Windows, macOS, Linux: `node ./scripts/setup_openai.js`
+- macOS, Linux shells only: `./scripts/setup_openai.sh`
+
+If you do not need a local proxy, choose `n` when the setup script asks about proxy configuration. Mochi reads `~/.openai-env` directly at runtime. On Windows you usually only need to restart the Extension Development Host after setup; no `source` step is required.
 
 Start the VS Code extension:
 
